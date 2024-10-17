@@ -76,6 +76,35 @@ def get_dns_cache() -> list[str]:
 
     return ips
 
+def store_malicious_ips(ips: list[str]) -> None:
+    conn: Connection = None
+    try:
+        logging.info("Attempting to connect to SQLite database...")
+        conn = sqlite3.connect(SQLITE_DB) # Connect to the SQLite database
+        logging.info("Successfully connected to sqlite db.")
+        cursor: Cursor = conn.cursor()
+
+        # Create dns_cache table if it doesn't exist
+        cursor.execute('''CREATE TABLE IF NOT EXISTS malicious_ips (ip TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)''')
+
+        if ips:
+            for ip in ips:
+                # Insert IPs into the database
+                cursor.execute('INSERT INTO malicious_ips (ip) VALUES (?)', (ip,))
+
+        # Commit changes to the database
+        conn.commit()
+        logging.info(f"Successfully added {len(ips)} IP(s) to malicious_ips Table")
+
+    except Exception as e:
+        logging.error(f"Error storing malicious ips: {e}")
+    finally:
+        logging.info("Closing SQLite connection")
+        if conn:
+            # Ensure the database connection is closed
+            conn.close()
+
+
 def store_dns_cache(ips: list[str]) -> None:
     """Store retrieved IPs in the SQLite database."""
 
@@ -212,6 +241,7 @@ def main() -> None:
                 if malicious_ip_list:   
                     # Alert for any detected malicious IPs
                     alert_malicious_ip(malicious_ip_list )
+                    store_malicious_ips(malicious_ip_list)
             
                 logging.info("Completed cycle, waiting for next run...")
             time.sleep(3600)  # Wait 1 hour before the next run
