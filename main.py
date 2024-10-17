@@ -161,7 +161,7 @@ def alert_malicious_ip(ip_list: list[str]) -> None:
     msg['From'] = APP_EMAIL
     msg['To'] = MY_EMAIL
     msg['subject'] = EMAIL_SUBJECT
-    msg_body: str = f"""Dear User,\n\nThe following IP address(es) have been detected as malicious in your DNS cache:\n\nMalicious IPs:{'\n'.join(f"- {ip}" for ip in ip_list)}\n\nPlease take appropriate action to mitigate any potential threats.\n\nBest regards,\nDNS Cache Monitoring App"""
+    msg_body: str = f"""Dear User,\n\nThe following IP address(es) have been detected as malicious in your DNS cache:\n\nMalicious IPs:\n{'\n'.join(f"- {ip}" for ip in ip_list)}\n\nPlease take appropriate action to mitigate any potential threats.\n\nBest regards,\nDNS Cache Monitoring App"""
     # Attach the message body to the email
     msg.attach(MIMEText(msg_body, 'plain'))
 
